@@ -82,8 +82,7 @@ docker-compose.yml    Full local runtime stack
 
 ## Next Hardening Steps
 
-- Replace whole-file embeddings with chunking and metadata-rich segments.
-- Persist retrieved text alongside vector IDs.
-- Add reranking and source citation rendering.
+- Add richer document parsers for PDF, DOCX, HTML, and Markdown.
+- Add reranking and stronger source citation rendering.
 - Add authentication, tenant isolation, and audit logging.
 - Add CI once backend dependency versions are pinned and compile-verified.
