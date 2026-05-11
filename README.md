@@ -1,66 +1,89 @@
-# Campus RAG Demo (Java Edition)
+<p align="center">
+  <a href="#readme">English</a>
+</p>
 
-This repository contains a fully runnable demonstration of a retrieval‑augmented generation (RAG) system built on a modern Java stack.  It showcases how to combine classical backend engineering (Spring Boot, MySQL, Redis) with generative AI tooling (LangChain4j, Milvus, MinIO) and a Vue 3 frontend.
+<h1 align="center">CampusRAG-QA</h1>
 
-> **Disclaimer**: This demo is intentionally kept simple to make it approachable.  It ingests entire files as single vectors and does not implement sophisticated chunking, reranking or vector merging.  Use it as a starting point and extend it with the advanced techniques described in the referenced Milvus tutorial【789819952613773†L190-L238】.
+<p align="center">
+  <em>"Upload campus knowledge. Ask naturally. Get grounded answers."</em>
+</p>
 
-## 🧱 Architecture
+<p align="center">
+  <img alt="Java 17" src="https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white">
+  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-3.3-6DB33F?logo=springboot&logoColor=white">
+  <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42B883?logo=vuedotjs&logoColor=white">
+  <img alt="Milvus" src="https://img.shields.io/badge/Vector-Milvus-00A1EA">
+  <img alt="Docker" src="https://img.shields.io/badge/Run-Docker%20Compose-2496ED?logo=docker&logoColor=white">
+</p>
 
-- **Backend**: A Spring Boot 3 application exposes REST endpoints for document ingestion and chat.  It stores metadata in MySQL, caches conversation state in Redis, uploads files to MinIO and stores vector embeddings in Milvus.  LangChain4j provides the embedding and chat models, memory, and Milvus integration【789819952613773†L190-L238】.  Server‑sent events (SSE) are used to stream answers back to the client【789819952613773†L252-L273】.
-- **Frontend**: A Vue 3 single‑page application allows users to upload documents and ask questions.  It uses the Fetch API to call the backend and displays streaming responses with a simple chat UI.
-- **Deployment**: Docker Compose orchestrates MySQL, Redis, Milvus (with its etcd and MinIO dependencies), the backend service and the frontend service.  Start the entire stack with a single command.
+<p align="center">
+  A runnable campus knowledge assistant built with Spring Boot, LangChain4j, Milvus, MinIO, MySQL, Redis, and Vue.
+</p>
 
-## 🚀 Getting Started
+![CampusRAG-QA dashboard](docs/assets/screenshots/campus-rag-dashboard.png)
 
-### Prerequisites
+## Why This Project
 
-- Docker and Docker Compose installed
-- An OpenAI API key (optional).  The backend is configured to use a dummy key; replace `OPENAI_API_KEY` in `docker-compose.yml` or `spring_rag_project/backend/src/main/resources/application.yml` with a real key if you want meaningful answers.
+CampusRAG-QA is the clean baseline for the larger Campus QA family. It focuses on the essential RAG loop:
 
-### Running with Docker Compose
+1. Upload a knowledge file.
+2. Store file metadata and object content.
+3. Create embeddings and save vectors.
+4. Retrieve relevant context.
+5. Ask the LLM for a grounded answer.
 
-From the root of the `spring_rag_project` directory run:
+## Architecture
 
-```bash
-docker compose up -d
+```mermaid
+flowchart LR
+    User[Browser] --> Frontend[Vue 3 + Nginx]
+    Frontend -->|/api| Backend[Spring Boot API]
+    Backend --> MySQL[(MySQL metadata)]
+    Backend --> Redis[(Redis)]
+    Backend --> MinIO[(MinIO files)]
+    Backend --> Milvus[(Milvus vectors)]
+    Backend --> LLM[OpenAI-compatible model]
 ```
 
-The services will build and start.  Once the stack is ready:
+## Quick Start
 
-- Open the frontend at `http://localhost:3000`.
-- Upload a plain text file in the **Upload Knowledge File** section.  The file is stored in MinIO, indexed into Milvus and recorded in MySQL.
-- Ask a question in the **Ask a Question** section.  The system embeds your query, performs a vector search in Milvus and calls the language model to generate a response.  The answer is streamed back to the browser.
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
 
-### Development without Docker
+Open:
 
-If you prefer to run the services locally:
+- Frontend: `http://localhost:3000`
+- Backend health: `http://localhost:8080/actuator/health`
+- MinIO console: `http://localhost:9001`
 
-1. Start supporting services (MySQL, Redis, Milvus and MinIO) manually or via Docker.
-2. In the `backend` directory run:
+Set `OPENAI_API_KEY` in `.env` before expecting real model answers.
 
-   ```bash
-   mvn spring-boot:run
-   ```
+## Production-Oriented Defaults
 
-3. In the `frontend` directory run:
+- `frontend/index.html` is included so Vite and Docker builds run correctly.
+- Nginx proxies `/api` to the backend in Docker.
+- `.env.example` documents runtime configuration.
+- Docker Compose includes service health checks for MySQL, Redis, and backend.
+- Spring Boot exposes `health` and `info` actuator endpoints.
+- Upload size is configured for 50 MB request/file limits.
 
-   ```bash
-   npm install
-   npm run dev
-   ```
+## Repository Layout
 
-### Extending the Demo
+```text
+backend/              Spring Boot API and RAG services
+frontend/             Vue 3 single page app
+docs/assets/          README screenshots and visual assets
+docs/OPERATIONS.md    Local runbook and troubleshooting notes
+docker-compose.yml    Full local runtime stack
+.env.example          Runtime configuration template
+```
 
-This project lays the groundwork for a production‑ready knowledge assistant.  To make it more powerful you could:
+## Next Hardening Steps
 
-1. **Implement proper document chunking and parent‑child context assembly**.  The Milvus tutorial highlights using `TikaDocReader` and token‑based splitting to process PDFs and Word documents, then storing the resulting vectors in Milvus【789819952613773†L190-L238】.
-2. **Use multiple retrieval strategies**.  Combine dense vector search from Milvus with BM25 keyword search from MySQL or ElasticSearch and fuse the results, mirroring the hybrid retrieval pipeline described in the Milvus article【789819952613773†L190-L238】.
-3. **Add Rerankers and context windows**.  After retrieving candidates from Milvus, use a cross‑encoder to rerank them and assemble a prompt within the model’s context window【789819952613773†L252-L273】.
-4. **Persist chat memory in Redis** for multi‑turn conversations.  LangChain4j offers a Redis‑backed `ChatMemory` implementation which can be plugged in via `langchain4j-redis`.
-5. **Replace OpenAI with local LLMs**.  The Milvus tutorial uses Ollama to run models like Mistral and `nomic‑embed‑text` locally【789819952613773†L190-L238】.  You can switch `chatModel` and `embeddingModel` beans to use `OllamaChatModel` and `OllamaEmbeddingModel` instead of OpenAI.
-
-## 📚 References
-
-- Milvus: *From Docs to Dialogue: Building a Production‑Ready AI Assistant with Spring Boot and Milvus*【789819952613773†L190-L238】 – This blog post provided the inspiration and guidance for integrating Spring Boot with Milvus, including document ingestion, vector storage and chat streaming.
-- Medium: *Java’s AI Awakening: A Backend Engineer’s Perspective on LangChain4j vs Spring AI* – Highlights the differences between Spring AI and LangChain4j and notes that LangChain4j supports RAG pipelines, streaming responses and tool‑calling features【589166017370999†L61-L89】.
-- LangChain4j & Spring AI: Both frameworks aim to bring LLMs to the Java ecosystem; LangChain4j emphasises agentic workflows and modular retrieval, while Spring AI offers declarative integrations and vector store support including Milvus【589166017370999†L61-L74】.
+- Replace whole-file embeddings with chunking and metadata-rich segments.
+- Persist retrieved text alongside vector IDs.
+- Add reranking and source citation rendering.
+- Add authentication, tenant isolation, and audit logging.
+- Add CI once backend dependency versions are pinned and compile-verified.
