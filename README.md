@@ -13,9 +13,11 @@
 </p>
 
 <p align="center">
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="docs/OPERATIONS.md">Operations</a> ·
-  <a href="docs/PRODUCTION-REVIEW.md">Production Review</a>
+  <a href="#quick-start">Quick Start</a> |
+  <a href="docs/OPERATIONS.md">Operations</a> |
+  <a href="docs/PRODUCTION-ARCHITECTURE.md">Architecture</a> |
+  <a href="docs/BOT-INTEGRATION.md">Bot Integration</a> |
+  <a href="docs/OPEN_SOURCE_REFERENCES.md">References</a>
 </p>
 
 <p align="center">
@@ -40,6 +42,7 @@ CampusRAG-QA is the clean baseline in the Campus QA family. It keeps the product
 | Chunk retrieval | Splits text, stores chunk rows, indexes vectors, and hydrates real source text before prompting. |
 | RAG chat | `/api/chat` answers using retrieved chunks only. |
 | Wiki mode | `/api/wiki/chat` formats retrieved chunks as wiki-style context. |
+| Bot gateway | `/api/bot/{channel}/callback` routes normalized Feishu, DingTalk, and WeChat messages. |
 | Frontend | Vue 3 workbench with mode switch, upload flow, and streaming-ready chat panel. |
 
 ## Frontend Preview
@@ -55,7 +58,9 @@ The README shows the real UI surface users see after running the app. Keep this 
 ```mermaid
 flowchart LR
     User["Browser"] --> UI["Vue 3 Workbench"]
+    Bot["Feishu / DingTalk / WeChat"] --> Gateway["Bot Gateway"]
     UI -->|/api| API["Spring Boot API"]
+    Gateway --> API
     API --> RAG["RAG Service"]
     API --> Wiki["Wiki Facade"]
     RAG --> Retrieval["Retrieval Context Service"]
@@ -101,6 +106,10 @@ backend/              Spring Boot API, ingestion, retrieval, and Wiki mode
 frontend/             Vue 3 workbench
 docs/assets/          README screenshots
 docs/OPERATIONS.md    Runtime and endpoint notes
+docs/PRODUCTION-ARCHITECTURE.md
+docs/BOT-INTEGRATION.md
+docs/openapi/          API contract templates
+deploy/k8s/            Kubernetes deployment template
 docs/PRODUCTION-REVIEW.md
 docker-compose.yml    Full local runtime stack
 .env.example          Runtime configuration template

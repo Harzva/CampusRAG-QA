@@ -15,6 +15,8 @@ CampusRAG-QA is the baseline repository. It should stay small, readable, and use
 | Configuration | Replaced `dummy` API-key defaults with `replace-me` and documented `.env` usage. |
 | Documentation | Added operations notes, architecture map, and production checklist. |
 | CI | Added GitHub Actions jobs for frontend build and backend Maven tests. |
+| Bot integration | Added a disabled-by-default Bot gateway for Feishu, DingTalk, and WeChat adapters. |
+| Observability | Added Prometheus metrics exposure and graceful shutdown settings. |
 
 ## Highest-Impact Next Work
 
@@ -24,6 +26,7 @@ CampusRAG-QA is the baseline repository. It should stay small, readable, and use
 | P1 | Add parsers for PDF, DOCX, Markdown, and HTML | Current UTF-8 extraction is too narrow. |
 | P2 | Add reranking before prompt assembly | Improves answer quality on larger corpora. |
 | P2 | Add basic auth and workspace isolation | Required before real campus use. |
+| P2 | Add Bot idempotency storage | Prevents duplicate platform retries from creating duplicate model calls. |
 | P2 | Expand CI with Docker Compose smoke tests | Verifies the whole runtime, not only builds. |
 
 ## Known Tradeoffs

@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: campus-rag-qa-secrets
+type: Opaque
+stringData:
+  OPENAI_API_KEY: replace-me
+  MYSQL_ROOT_PASSWORD: replace-me
+  MINIO_ROOT_PASSWORD: replace-me
+  BOT_SIGNING_SECRET: replace-me-long-random-secret
+  BOT_FEISHU_VERIFICATION_TOKEN: replace-me
+  BOT_FEISHU_SIGNING_SECRET: replace-me
+  BOT_DINGTALK_TOKEN: replace-me
+  BOT_DINGTALK_SIGNING_SECRET: replace-me
+  BOT_WECHAT_TOKEN: replace-me
+  BOT_WECHAT_SIGNING_SECRET: replace-me
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: campus-rag-qa-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: campus-rag-qa-backend
+  template:
+    metadata:
+      labels:
+        app: campus-rag-qa-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/harzva/campus-rag-qa-backend:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: BOT_ENABLED
+              value: "true"
+            - name: BOT_DEFAULT_MODE
+              value: rag
+            - name: BOT_FEISHU_ENABLED
+              value: "true"
+            - name: BOT_DINGTALK_ENABLED
+              value: "true"
+            - name: BOT_WECHAT_ENABLED
+              value: "true"
+            - name: BOT_FEISHU_ALLOWED_MODES
+              value: rag,wiki
+            - name: BOT_DINGTALK_ALLOWED_MODES
+              value: rag,wiki
+            - name: BOT_WECHAT_ALLOWED_MODES
+              value: rag,wiki
+          envFrom:
+            - secretRef:
+                name: campus-rag-qa-secrets
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: "2"
+              memory: 2Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: campus-rag-qa-backend
+spec:
+  selector:
+    app: campus-rag-qa-backend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
