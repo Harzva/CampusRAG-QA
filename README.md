@@ -26,6 +26,14 @@
   <img src="docs/assets/screenshots/campus-rag-dashboard.png" alt="CampusRAG-QA frontend preview" width="920">
 </p>
 
+## Architecture Framework
+
+<p align="center">
+  <img src="docs/assets/architecture/campus-rag-architecture.png" alt="CampusRAG-QA architecture framework" width="920">
+</p>
+
+> This image is an ImageGen-rendered visual architecture map. The Mermaid diagram and OpenAPI docs remain the exact engineering contract.
+
 ## Position
 
 CampusRAG-QA is the clean baseline in the Campus QA family. It keeps the product scope intentionally small: upload knowledge files, index text chunks, ask grounded questions, and switch to Wiki mode when the same retrieval core should be presented as wiki-style context.

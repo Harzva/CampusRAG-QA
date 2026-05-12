@@ -2,6 +2,12 @@
 
 This document turns CampusRAG-QA into a deployable campus QA service with browser access and optional Bot access for Feishu, DingTalk, and WeChat.
 
+<p align="center">
+  <img src="assets/architecture/campus-rag-architecture.png" alt="CampusRAG-QA architecture framework" width="920">
+</p>
+
+The image above is an ImageGen-rendered visual map for team review. The Mermaid graph below is the exact implementation-oriented architecture.
+
 ## Goals
 
 - Keep the runtime deployable with Docker Compose for local and small-team use.
