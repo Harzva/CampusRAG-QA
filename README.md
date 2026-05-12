@@ -1,48 +1,69 @@
-<p align="center">
-  <a href="#readme">English</a>
-</p>
-
 <h1 align="center">CampusRAG-QA</h1>
 
 <p align="center">
-  <em>"Upload campus knowledge. Ask naturally. Get grounded answers."</em>
+  Campus knowledge QA baseline with switchable <strong>RAG</strong> and <strong>Wiki</strong> modes.
 </p>
 
 <p align="center">
   <img alt="Java 17" src="https://img.shields.io/badge/Java-17-007396?logo=openjdk&logoColor=white">
-  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-3.3-6DB33F?logo=springboot&logoColor=white">
+  <img alt="Spring Boot 3.3" src="https://img.shields.io/badge/Spring%20Boot-3.3-6DB33F?logo=springboot&logoColor=white">
   <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42B883?logo=vuedotjs&logoColor=white">
-  <img alt="Milvus" src="https://img.shields.io/badge/Vector-Milvus-00A1EA">
-  <img alt="Docker" src="https://img.shields.io/badge/Run-Docker%20Compose-2496ED?logo=docker&logoColor=white">
+  <img alt="Vector" src="https://img.shields.io/badge/Retrieval-Milvus-00A1EA">
+  <img alt="Docker Compose" src="https://img.shields.io/badge/Run-Docker%20Compose-2496ED?logo=docker&logoColor=white">
 </p>
 
 <p align="center">
-  A runnable campus knowledge assistant built with Spring Boot, LangChain4j, Milvus, MinIO, MySQL, Redis, and Vue.
+  <a href="#quick-start">Quick Start</a> ·
+  <a href="docs/OPERATIONS.md">Operations</a> ·
+  <a href="docs/PRODUCTION-REVIEW.md">Production Review</a>
 </p>
 
-![CampusRAG-QA dashboard](docs/assets/screenshots/campus-rag-dashboard.png)
+<p align="center">
+  <img src="docs/assets/screenshots/campus-rag-dashboard.png" alt="CampusRAG-QA frontend preview" width="920">
+</p>
 
-## Why This Project
+## Position
 
-CampusRAG-QA is the clean baseline for the larger Campus QA family. It focuses on the essential RAG loop:
+CampusRAG-QA is the clean baseline in the Campus QA family. It keeps the product scope intentionally small: upload knowledge files, index text chunks, ask grounded questions, and switch to Wiki mode when the same retrieval core should be presented as wiki-style context.
 
-1. Upload a knowledge file.
-2. Store file metadata and object content.
-3. Create embeddings and save vectors.
-4. Retrieve relevant context.
-5. Ask the LLM for a grounded answer.
+| Repository | Role |
+| --- | --- |
+| `Harzva/CampusRAG-QA` | Baseline RAG + Wiki mode. |
+| `Harzva/CampusAgent-QA` | Adds agent tools and GBrain skills. |
+| `Harzva/HyperMemory` | Final memory-enhanced system. |
+
+## What It Does
+
+| Capability | Implementation |
+| --- | --- |
+| Document ingestion | Uploads files through Spring Boot and stores metadata/object content. |
+| Chunk retrieval | Splits text, stores chunk rows, indexes vectors, and hydrates real source text before prompting. |
+| RAG chat | `/api/chat` answers using retrieved chunks only. |
+| Wiki mode | `/api/wiki/chat` formats retrieved chunks as wiki-style context. |
+| Frontend | Vue 3 workbench with mode switch, upload flow, and streaming-ready chat panel. |
+
+## Frontend Preview
+
+The README shows the real UI surface users see after running the app. Keep this screenshot current when the frontend changes.
+
+<p align="center">
+  <img src="docs/assets/screenshots/campus-rag-dashboard.png" alt="CampusRAG-QA workbench" width="920">
+</p>
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    User[Browser] --> Frontend[Vue 3 + Nginx]
-    Frontend -->|/api| Backend[Spring Boot API]
-    Backend --> MySQL[(MySQL metadata)]
-    Backend --> Redis[(Redis)]
-    Backend --> MinIO[(MinIO files)]
-    Backend --> Milvus[(Milvus vectors)]
-    Backend --> LLM[OpenAI-compatible model]
+    User["Browser"] --> UI["Vue 3 Workbench"]
+    UI -->|/api| API["Spring Boot API"]
+    API --> RAG["RAG Service"]
+    API --> Wiki["Wiki Facade"]
+    RAG --> Retrieval["Retrieval Context Service"]
+    Wiki --> Retrieval
+    Retrieval --> Milvus[("Milvus vectors")]
+    Retrieval --> MySQL[("MySQL chunks")]
+    API --> MinIO[("MinIO files")]
+    API --> Model["OpenAI-compatible models"]
 ```
 
 ## Quick Start
@@ -58,31 +79,33 @@ Open:
 - Backend health: `http://localhost:8080/actuator/health`
 - MinIO console: `http://localhost:9001`
 
-Set `OPENAI_API_KEY` in `.env` before expecting real model answers.
+Set `OPENAI_API_KEY` in `.env` before expecting model-backed answers.
 
-## Production-Oriented Defaults
+## Local Development
 
-- `frontend/index.html` is included so Vite and Docker builds run correctly.
-- Nginx proxies `/api` to the backend in Docker.
-- `.env.example` documents runtime configuration.
-- Docker Compose includes service health checks for MySQL, Redis, and backend.
-- Spring Boot exposes `health` and `info` actuator endpoints.
-- Upload size is configured for 50 MB request/file limits.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+```bash
+cd backend
+mvn spring-boot:run
+```
 
 ## Repository Layout
 
 ```text
-backend/              Spring Boot API and RAG services
-frontend/             Vue 3 single page app
-docs/assets/          README screenshots and visual assets
-docs/OPERATIONS.md    Local runbook and troubleshooting notes
+backend/              Spring Boot API, ingestion, retrieval, and Wiki mode
+frontend/             Vue 3 workbench
+docs/assets/          README screenshots
+docs/OPERATIONS.md    Runtime and endpoint notes
+docs/PRODUCTION-REVIEW.md
 docker-compose.yml    Full local runtime stack
 .env.example          Runtime configuration template
 ```
 
-## Next Hardening Steps
+## Production Readiness
 
-- Add richer document parsers for PDF, DOCX, HTML, and Markdown.
-- Add reranking and stronger source citation rendering.
-- Add authentication, tenant isolation, and audit logging.
-- Add CI once backend dependency versions are pinned and compile-verified.
+See [Production Review](docs/PRODUCTION-REVIEW.md) for the detailed audit. The next highest-impact work is structured citations, richer document parsing, reranking, access control, and Docker Compose smoke tests in CI.

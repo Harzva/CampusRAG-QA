@@ -7,34 +7,38 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Check:
+Open:
 
-```bash
-docker compose ps
-curl http://localhost:8080/actuator/health
-```
+- Frontend: `http://localhost:3000`
+- Backend health: `http://localhost:8080/actuator/health`
+- MinIO console: `http://localhost:9001`
 
-## Configuration
+Set `OPENAI_API_KEY` in `.env` before using model-backed chat.
 
-Use `.env` for runtime settings. Do not commit real API keys.
+## Modes
 
-Important values:
+| Mode | Chat endpoint | Upload endpoint | Purpose |
+| --- | --- | --- | --- |
+| RAG | `/api/chat` | `/api/documents` | Retrieval-augmented QA over uploaded files. |
+| LLM Wiki | `/api/wiki/chat` | `/api/wiki/upload` | Wiki-style view over retrieved source chunks. |
+
+## Runtime Configuration
 
 | Variable | Purpose |
 | --- | --- |
-| `OPENAI_API_KEY` | Model provider key. |
+| `OPENAI_API_KEY` | OpenAI-compatible model provider key. |
+| `OPENAI_CHAT_MODEL` | Chat model name. |
+| `OPENAI_EMBEDDING_MODEL` | Embedding model name. |
 | `FRONTEND_PORT` | Browser-facing frontend port. |
 | `BACKEND_PORT` | Browser/API-facing backend port. |
-| `MYSQL_ROOT_PASSWORD` | MySQL root password for local stack. |
-| `MINIO_ROOT_USER` | MinIO console/access username. |
-| `MINIO_ROOT_PASSWORD` | MinIO password. |
+| `MYSQL_ROOT_PASSWORD` | Local MySQL root password. |
+| `MINIO_ROOT_USER` | Local MinIO username. |
+| `MINIO_ROOT_PASSWORD` | Local MinIO password. |
 
-## Troubleshooting
+## Production Checklist
 
-| Symptom | Check |
-| --- | --- |
-| Frontend cannot call backend | Confirm nginx `frontend/nginx.conf` proxies `/api/` to `backend:8080`. |
-| Model replies are empty or invalid | Confirm `OPENAI_API_KEY` is set. |
-| Upload fails | Check MinIO container logs and bucket settings. |
-| Retrieval is weak | Current prototype stores vector item IDs; production should persist chunk text and metadata. |
-
+- Add source citation objects alongside generated answers.
+- Add PDF, DOCX, HTML, and Markdown parsing beyond UTF-8 text extraction.
+- Add reranking for the top retrieved chunks.
+- Add CI for `npm run build` and `mvn test`.
+- Add authentication before exposing a shared campus knowledge base.
