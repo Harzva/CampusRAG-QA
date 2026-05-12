@@ -16,6 +16,8 @@
   <a href="#quick-start">Quick Start</a> |
   <a href="docs/OPERATIONS.md">Operations</a> |
   <a href="docs/PRODUCTION-ARCHITECTURE.md">Architecture</a> |
+  <a href="docs/PRODUCTION-GAPS.md">Production Gaps</a> |
+  <a href="docs/MAINTENANCE.md">Maintenance</a> |
   <a href="docs/BOT-INTEGRATION.md">Bot Integration</a> |
   <a href="docs/OPEN_SOURCE_REFERENCES.md">References</a>
 </p>
@@ -45,13 +47,17 @@ CampusRAG-QA is the clean baseline in the Campus QA family. It keeps the product
 | Bot gateway | `/api/bot/{channel}/callback` routes normalized Feishu, DingTalk, and WeChat messages. |
 | Frontend | Vue 3 workbench with mode switch, upload flow, and streaming-ready chat panel. |
 
-## Frontend Preview
+## Visual Walkthrough
 
-The README shows the real UI surface users see after running the app. Keep this screenshot current when the frontend changes.
+Six README-owned screenshots show the runnable workbench across modes, data flow, Bot readiness, and mobile layout.
 
-<p align="center">
-  <img src="docs/assets/screenshots/campus-rag-dashboard.png" alt="CampusRAG-QA workbench" width="920">
-</p>
+| Dashboard | Wiki mode | Upload state |
+| --- | --- | --- |
+| <img src="docs/assets/screenshots/campus-rag-dashboard.png" alt="CampusRAG-QA dashboard" width="300"> | <img src="docs/assets/screenshots/campus-rag-wiki-mode.png" alt="CampusRAG-QA Wiki mode" width="300"> | <img src="docs/assets/screenshots/campus-rag-upload-state.png" alt="CampusRAG-QA upload state" width="300"> |
+
+| Conversation | Production readiness | Mobile |
+| --- | --- | --- |
+| <img src="docs/assets/screenshots/campus-rag-conversation.png" alt="CampusRAG-QA conversation" width="300"> | <img src="docs/assets/screenshots/campus-rag-readiness.png" alt="CampusRAG-QA production readiness" width="300"> | <img src="docs/assets/screenshots/campus-rag-mobile.png" alt="CampusRAG-QA mobile" width="160"> |
 
 ## Architecture
 
@@ -107,14 +113,18 @@ frontend/             Vue 3 workbench
 docs/assets/          README screenshots
 docs/OPERATIONS.md    Runtime and endpoint notes
 docs/PRODUCTION-ARCHITECTURE.md
+docs/PRODUCTION-GAPS.md
+docs/MAINTENANCE.md
 docs/BOT-INTEGRATION.md
+docs/SCREENSHOTS.md
 docs/openapi/          API contract templates
 deploy/k8s/            Kubernetes deployment template
 docs/PRODUCTION-REVIEW.md
+SECURITY.md            Security policy and secret-handling notes
 docker-compose.yml    Full local runtime stack
 .env.example          Runtime configuration template
 ```
 
 ## Production Readiness
 
-See [Production Review](docs/PRODUCTION-REVIEW.md) for the detailed audit. The next highest-impact work is structured citations, richer document parsing, reranking, access control, and Docker Compose smoke tests in CI.
+See [Production Review](docs/PRODUCTION-REVIEW.md) and [Production Gaps](docs/PRODUCTION-GAPS.md) for the detailed audit. The remaining production blockers are authentication, tenant-scoped data isolation, Bot idempotency, and structured citations.
