@@ -53,7 +53,7 @@ CampusRAG-QA is the clean baseline in the Campus QA family. It keeps the product
 | RAG chat | `/api/chat` answers using retrieved chunks only. |
 | Wiki mode | `/api/wiki/chat` formats retrieved chunks as wiki-style context. |
 | Bot gateway | `/api/bot/{channel}/callback` routes normalized Feishu, DingTalk, and WeChat messages. |
-| Frontend | Vue 3 workbench with mode switch, upload flow, and streaming-ready chat panel. |
+| Frontend | Vue 3 workbench with segmented RAG / LLM Wiki buttons, upload flow, and streaming-ready chat panel. |
 
 ## Visual Walkthrough
 
@@ -99,6 +99,22 @@ Open:
 - MinIO console: `http://localhost:9001`
 
 Set `OPENAI_API_KEY` in `.env` before expecting model-backed answers.
+
+## Mode Switching
+
+The browser workbench now uses explicit mode buttons instead of a hidden dropdown. RAG and LLM Wiki share the same indexed knowledge base, but they answer through different presentation paths.
+
+```bash
+curl -N -X POST http://localhost:8080/api/chat \
+  -H "Content-Type: application/json" \
+  -d '{"conversationId":"local-rag","userInput":"How do I replace a campus card?"}'
+```
+
+```bash
+curl -N -X POST http://localhost:8080/api/wiki/chat \
+  -H "Content-Type: application/json" \
+  -d '{"conversationId":"local-wiki","userInput":"How do I replace a campus card?"}'
+```
 
 ## Local Development
 
