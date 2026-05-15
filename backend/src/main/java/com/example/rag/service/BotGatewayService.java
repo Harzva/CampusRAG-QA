@@ -15,13 +15,16 @@ public class BotGatewayService {
     private final BotGatewayProperties properties;
     private final RagService ragService;
     private final LLMWikiService wikiService;
+    private final BotIdempotencyService idempotencyService;
 
     public BotGatewayService(BotGatewayProperties properties,
                              RagService ragService,
-                             LLMWikiService wikiService) {
+                             LLMWikiService wikiService,
+                             BotIdempotencyService idempotencyService) {
         this.properties = properties;
         this.ragService = ragService;
         this.wikiService = wikiService;
+        this.idempotencyService = idempotencyService;
     }
 
     public BotMessageResponse handle(BotMessageRequest request) {
@@ -37,12 +40,29 @@ public class BotGatewayService {
                 ? request.getConversationId()
                 : channel + ":" + normalize(request.getSenderId(), "anonymous");
 
-        String answer = switch (mode) {
-            case "wiki" -> wikiService.query(text);
-            case "rag" -> ragService.ask(conversationId, text);
-            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported bot mode: " + mode);
-        };
-        return BotMessageResponse.success(channel, conversationId, mode, answer);
+        String messageId = request.getMessageId();
+        String tenantId = normalize(request.getTenantId(), "default");
+        boolean idempotencyAcquired = false;
+        if (StringUtils.hasText(messageId)) {
+            idempotencyAcquired = idempotencyService.acquire(tenantId, channel, messageId);
+            if (!idempotencyAcquired) {
+                return BotMessageResponse.success(channel, conversationId, mode, "Duplicate message ignored.");
+            }
+        }
+
+        try {
+            String answer = switch (mode) {
+                case "wiki" -> wikiService.query(text);
+                case "rag" -> ragService.ask(conversationId, text);
+                default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported bot mode: " + mode);
+            };
+            return BotMessageResponse.success(channel, conversationId, mode, answer);
+        } catch (RuntimeException e) {
+            if (idempotencyAcquired) {
+                idempotencyService.release(tenantId, channel, messageId);
+            }
+            throw e;
+        }
     }
 
     private void assertModeAllowed(String channel, String mode) {
