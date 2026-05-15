@@ -14,9 +14,10 @@ CampusRAG-QA is the baseline repository. It should stay small, readable, and use
 | Retrieval | Wiki mode now reads through the shared retrieval core instead of dumping stored pages. |
 | Configuration | Replaced `dummy` API-key defaults with `replace-me` and documented `.env` usage. |
 | Documentation | Added operations notes, architecture map, and production checklist. |
-| CI | Added GitHub Actions jobs for frontend build and backend Maven tests. |
+| CI | Added GitHub Actions jobs for frontend build, backend Maven tests, Compose config validation, and Docker image builds. |
 | Bot integration | Added a disabled-by-default Bot gateway for Feishu, DingTalk, and WeChat adapters. |
 | Observability | Added Prometheus metrics exposure and graceful shutdown settings. |
+| Deployment hardening | Kubernetes manifests now separate runtime config from secrets and include startup probes plus non-root container security settings. |
 
 ## Highest-Impact Next Work
 
@@ -27,7 +28,7 @@ CampusRAG-QA is the baseline repository. It should stay small, readable, and use
 | P2 | Add reranking before prompt assembly | Improves answer quality on larger corpora. |
 | P2 | Add basic auth and workspace isolation | Required before real campus use. |
 | P2 | Add Bot idempotency storage | Prevents duplicate platform retries from creating duplicate model calls. |
-| P2 | Expand CI with Docker Compose smoke tests | Verifies the whole runtime, not only builds. |
+| P2 | Add an authenticated staging smoke environment | Verifies the whole runtime with real dependencies and guarded secrets. |
 
 ## Known Tradeoffs
 
