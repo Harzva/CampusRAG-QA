@@ -53,8 +53,8 @@ public class BotGatewayService {
 
         try {
             AnswerWithSources result = switch (mode) {
-                case "wiki" -> wikiService.queryWithSources(text);
-                case "rag" -> ragService.askWithSources(conversationId, text);
+                case "wiki" -> wikiService.queryWithSources(text, tenantId);
+                case "rag" -> ragService.askWithSources(conversationId, text, tenantId);
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported bot mode: " + mode);
             };
             return BotMessageResponse.successWithSources(channel, conversationId, mode, result.getAnswer(), result.getSources());
