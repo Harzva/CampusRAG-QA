@@ -18,7 +18,7 @@ This repository is deployable as a small campus QA service, but it still needs t
 | `ddl-auto: update` | Schema changes are implicit. | Introduce Flyway/Liquibase migrations. |
 | Limited document parsing | UTF-8 text works, PDFs/DOCX/HTML are narrow. | Add Tika or dedicated parsers with file-type validation. |
 | No reranker | Retrieval quality can drop as corpus grows. | Add a reranking step before prompt assembly. |
-| No alert rules | Metrics exist but no alert policy. | Add Prometheus alert rules for 5xx, latency, memory, and disk. |
+| Base alert rules added | Prometheus alert rules exist for HTTP errors, QA errors, latency, memory, and traffic lulls. | Wire Prometheus/Alertmanager to the rule file and tune thresholds to real traffic. |
 
 ## P2 Product Refinement
 

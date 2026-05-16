@@ -1,0 +1,61 @@
+groups:
+  - name: campus-rag-qa-alerts
+    rules:
+      - alert: CampusRAGQA_HighHttpErrorRate
+        expr: |
+          sum(rate(http_server_requests_seconds_count{application="campus-rag-qa",status=~"5.."}[5m]))
+            / sum(rate(http_server_requests_seconds_count{application="campus-rag-qa"}[5m]))
+          > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High 5xx error rate on CampusRAG-QA"
+          description: "More than 5% of HTTP requests are returning 5xx errors for 5 minutes."
+
+      - alert: CampusRAGQA_HighQaErrorRate
+        expr: |
+          sum by (mode) (rate(campus_qa_operation_requests_total{application="campus-rag-qa",status="error"}[5m]))
+            / sum by (mode) (rate(campus_qa_operation_requests_total{application="campus-rag-qa"}[5m]))
+          > 0.10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High QA error rate on CampusRAG-QA (mode {{ $labels.mode }})"
+          description: "QA operation error rate for mode {{ $labels.mode }} exceeds 10% over the last 5 minutes."
+
+      - alert: CampusRAGQA_HighQaLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le, mode) (rate(campus_qa_operation_duration_seconds_bucket{application="campus-rag-qa"}[5m]))
+          ) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High p95 QA latency on CampusRAG-QA (mode {{ $labels.mode }})"
+          description: "P95 QA operation latency for mode {{ $labels.mode }} exceeds 10 seconds."
+
+      - alert: CampusRAGQA_NoSuccessfulQaTraffic
+        expr: |
+          absent(rate(campus_qa_operation_requests_total{application="campus-rag-qa",status="success"}[30m]))
+            or sum(rate(campus_qa_operation_requests_total{application="campus-rag-qa",status="success"}[30m])) == 0
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No successful QA traffic on CampusRAG-QA"
+          description: "No successful QA operations recorded in the last 30 minutes. May indicate broken ingestion or routing. Disable this alert for low-traffic dev environments."
+
+      - alert: CampusRAGQA_HighJvmMemoryPressure
+        expr: |
+          sum(jvm_memory_used_bytes{application="campus-rag-qa",area="heap"})
+            / sum(jvm_memory_max_bytes{application="campus-rag-qa",area="heap"})
+          > 0.85
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High JVM heap memory pressure on CampusRAG-QA"
+          description: "JVM heap usage exceeds 85% for 10 minutes. May need memory tuning or investigation."
