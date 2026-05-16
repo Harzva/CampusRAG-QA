@@ -17,15 +17,18 @@ public class BotGatewayService {
     private final RagService ragService;
     private final LLMWikiService wikiService;
     private final BotIdempotencyService idempotencyService;
+    private final BotRateLimitService rateLimitService;
 
     public BotGatewayService(BotGatewayProperties properties,
                              RagService ragService,
                              LLMWikiService wikiService,
-                             BotIdempotencyService idempotencyService) {
+                             BotIdempotencyService idempotencyService,
+                             BotRateLimitService rateLimitService) {
         this.properties = properties;
         this.ragService = ragService;
         this.wikiService = wikiService;
         this.idempotencyService = idempotencyService;
+        this.rateLimitService = rateLimitService;
     }
 
     public BotMessageResponse handle(BotMessageRequest request) {
@@ -43,6 +46,11 @@ public class BotGatewayService {
 
         String messageId = request.getMessageId();
         String tenantId = normalize(request.getTenantId(), "default");
+
+        if (!rateLimitService.isAllowed(tenantId, channel)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "Bot rate limit exceeded");
+        }
+
         boolean idempotencyAcquired = false;
         if (StringUtils.hasText(messageId)) {
             idempotencyAcquired = idempotencyService.acquire(tenantId, channel, messageId);

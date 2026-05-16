@@ -49,6 +49,9 @@ Uploads accept an optional `tenantId` form field. Chat and `with-sources` JSON r
 | `BOT_WECHAT_ENABLED` | Enables the WeChat channel. |
 | `BOT_IDEMPOTENCY_ENABLED` | Enables duplicate message detection via Redis. Defaults to `true`. |
 | `BOT_IDEMPOTENCY_TTL_SECONDS` | TTL in seconds for idempotency keys. Defaults to `600`. |
+| `BOT_RATE_LIMIT_ENABLED` | Enables per-tenant+channel gateway rate limiting. Defaults to `true`. |
+| `BOT_RATE_LIMIT_MAX_PER_MINUTE` | Max requests per window per tenant+channel. Defaults to `60`. |
+| `BOT_RATE_LIMIT_WINDOW_SECONDS` | Rate limit window in seconds. Defaults to `60`. |
 
 ## Bot Gateway Smoke Test
 
@@ -66,4 +69,4 @@ curl -i http://localhost:8080/actuator/health
 - Add PDF, DOCX, HTML, and Markdown parsing beyond UTF-8 text extraction.
 - Add reranking for the top retrieved chunks.
 - Add RBAC for user-to-tenant membership and admin-only document namespace management.
-- Add gateway rate limits before exposing public Bot endpoints.
+- ~~Add gateway rate limits before exposing public Bot endpoints.~~ Done: `BotRateLimitService` enforces a fixed-window counter per `(tenantId, channel)` via Redis `INCR` + `EXPIRE`. Keys are scoped as `bot:rate-limit:<tenant>:<channel>:<bucket>` and auto-expire after the window. Excess requests receive `429 Too Many Requests`. Set `BOT_RATE_LIMIT_ENABLED=false` to disable. Fails open on Redis errors.
