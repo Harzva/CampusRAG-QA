@@ -211,6 +211,7 @@ const loading = ref(false);
 const selectedMode = ref('rag');
 const selectedTheme = ref('standard');
 const messageContainer = ref(null);
+const apiToken = ref(import.meta.env.VITE_API_TOKEN ?? '');
 let messageCounter = 0;
 
 const currentMode = computed(() => modes.find((mode) => mode.value === selectedMode.value) ?? modes[0]);
@@ -237,12 +238,19 @@ function applyRoutePreview() {
   const mode = params.get('mode');
   const theme = params.get('theme');
   const demo = params.get('demo');
+  const token = params.get('apiToken');
 
   if (modes.some((candidate) => candidate.value === mode)) {
     selectedMode.value = mode;
   }
   if (theme && themes[theme]) {
     selectedTheme.value = theme;
+  }
+  if (token) {
+    apiToken.value = token;
+    window.localStorage?.setItem('campusQaApiToken', token);
+  } else {
+    apiToken.value = window.localStorage?.getItem('campusQaApiToken') || apiToken.value;
   }
   if (demo === 'conversation') {
     messages.value = [
@@ -273,6 +281,10 @@ function scrollToBottom() {
   });
 }
 
+function apiHeaders(base = {}) {
+  return apiToken.value ? { ...base, 'X-API-Token': apiToken.value } : base;
+}
+
 async function uploadFile() {
   if (!selectedFile.value || uploading.value) return;
 
@@ -284,6 +296,7 @@ async function uploadFile() {
   try {
     const response = await fetch(currentMode.value.uploadEndpoint, {
       method: 'POST',
+      headers: apiHeaders(),
       body: formData,
     });
     if (!response.ok) {
@@ -312,7 +325,7 @@ async function sendQuestion() {
   try {
     const response = await fetch(currentMode.value.chatEndpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: apiHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ conversationId: 'default', userInput: input }),
     });
     if (!response.ok) {

@@ -1,0 +1,20 @@
+{
+  "suite": "campus-rag-qa-golden",
+  "allowed_modes": ["rag", "wiki"],
+  "cases": [
+    {
+      "id": "rag-campus-card-replacement",
+      "mode": "rag",
+      "question": "How does a student apply for campus card replacement?",
+      "expected_keywords": ["campus card", "replacement", "student"],
+      "expected_sources": true
+    },
+    {
+      "id": "wiki-scholarship-policy",
+      "mode": "wiki",
+      "question": "Summarize the scholarship application policy from the uploaded handbook.",
+      "expected_keywords": ["scholarship", "application", "policy"],
+      "expected_sources": true
+    }
+  ]
+}
