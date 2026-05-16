@@ -21,7 +21,9 @@ Set `OPENAI_API_KEY` in `.env` before using model-backed chat.
 | Mode | Chat endpoint | Upload endpoint | Purpose |
 | --- | --- | --- | --- |
 | RAG | `/api/chat` | `/api/documents` | Retrieval-augmented QA over uploaded files. |
+| RAG with sources | `/api/chat/with-sources` | `/api/documents` | Same as RAG, returns `AnswerWithSources` JSON with source citations. |
 | LLM Wiki | `/api/wiki/chat` | `/api/wiki/upload` | Wiki-style view over retrieved source chunks. |
+| LLM Wiki with sources | `/api/wiki/chat/with-sources` | `/api/wiki/upload` | Same as Wiki, returns `AnswerWithSources` JSON with source citations. |
 | Bot Gateway | `/api/bot/{channel}/callback` | N/A | Normalized Feishu, DingTalk, and WeChat callbacks. |
 
 ## Runtime Configuration
@@ -54,7 +56,7 @@ curl -i http://localhost:8080/actuator/health
 
 ## Production Checklist
 
-- Add source citation objects alongside generated answers.
+- ~~Add source citation objects alongside generated answers.~~ Done: `AnswerWithSources` DTO returned from `/api/chat/with-sources` and `/api/wiki/chat/with-sources`. Bot gateway responses (`BotMessageResponse`) now include an optional `sources` list for `rag` and `wiki` modes.
 - ~~Add idempotency storage for Bot message IDs before enabling platform retries.~~ Done: `BotIdempotencyService` acquires a Redis `SETNX` key by `(tenantId, channel, messageId)` before dispatch. Concurrent duplicates are ignored, successful messages keep the key until TTL expiry, and processing exceptions release the key so platform retries can run again. Missing `tenantId` defaults to `"default"`. Set `BOT_IDEMPOTENCY_ENABLED=false` to disable.
 - Add PDF, DOCX, HTML, and Markdown parsing beyond UTF-8 text extraction.
 - Add reranking for the top retrieved chunks.

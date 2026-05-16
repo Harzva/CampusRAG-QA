@@ -1,6 +1,7 @@
 package com.example.rag.service;
 
 import com.example.rag.config.BotGatewayProperties;
+import com.example.rag.dto.AnswerWithSources;
 import com.example.rag.dto.BotMessageRequest;
 import com.example.rag.dto.BotMessageResponse;
 import org.springframework.http.HttpStatus;
@@ -51,12 +52,12 @@ public class BotGatewayService {
         }
 
         try {
-            String answer = switch (mode) {
-                case "wiki" -> wikiService.query(text);
-                case "rag" -> ragService.ask(conversationId, text);
+            AnswerWithSources result = switch (mode) {
+                case "wiki" -> wikiService.queryWithSources(text);
+                case "rag" -> ragService.askWithSources(conversationId, text);
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported bot mode: " + mode);
             };
-            return BotMessageResponse.success(channel, conversationId, mode, answer);
+            return BotMessageResponse.successWithSources(channel, conversationId, mode, result.getAnswer(), result.getSources());
         } catch (RuntimeException e) {
             if (idempotencyAcquired) {
                 idempotencyService.release(tenantId, channel, messageId);
